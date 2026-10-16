@@ -12,7 +12,7 @@ if (!\includes\SQL::existsDatabase($mysql_database)) {
 
 function redirectAuth() : void
 {
-    $request= "SELECT u_nom, u_passwd, u_prenom, u_is_resp, u_is_hr, u_is_admin, u_is_active  FROM conges_users where u_login = '". \includes\SQL::quote($_SESSION['userlogin'])."' " ;
+    $request = "SELECT u_is_resp, u_is_hr, u_is_active FROM conges_users WHERE u_login = '" . \includes\SQL::quote($_SESSION['userlogin']) . "'";
     $rs = \includes\SQL::query($request );
     if ($rs->num_rows != 1) {
         redirect(ROOT_PATH . 'authentification');
@@ -105,17 +105,15 @@ function authDefault(string $authMethod, \App\Libraries\ApiClient $api)
             session_create($session_username);
             storeTokenApi($api, $session_username, $session_password);
         } catch (\Exception $e) {
+            $_SESSION = [];
             // Log failed accesses, matching the default fail2ban nginx/apache auth rules
+            $logUsername = preg_replace('/[\x00-\x1F\x7F"]/', '', $session_username);
             if (isset($_SERVER['SERVER_SOFTWARE']) && preg_match('/nginx/i', $_SERVER['SERVER_SOFTWARE'])) {
-                error_log('user "' . $session_username . '" was not found in "Libertempo"', 4);
+                error_log('user "' . $logUsername . '" was not found in "Libertempo"', 4);
             } else {
-                error_log('user "' . $session_username . '" authentication failure for "Libertempo"', 4);
+                error_log('user "' . $logUsername . '" authentication failure for "Libertempo"', 4);
             }
-            dd($e->getMessage());
-            $session_username="";
-            $session_password="";
-            $erreur="login_passwd_incorrect";
-            session_saisie_user_password($erreur, $session_username);
+            session_saisie_user_password('login_passwd_incorrect', '');
         }
     }
 }

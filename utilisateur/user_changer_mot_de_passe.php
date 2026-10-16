@@ -12,7 +12,7 @@ if (getpost_variable('change_passwd', 0) == 1) {
         $error = _('user_passwd_error');
     } else {
         $passwd_md5 = password_hash($new_passwd1, PASSWORD_BCRYPT);
-        $sql1 = 'UPDATE conges_users SET  u_passwd=\''.$passwd_md5.'\' WHERE u_login=\''.$_SESSION['userlogin'].'\' ';
+        $sql1 = 'UPDATE conges_users SET  u_passwd=\''.$passwd_md5.'\' WHERE u_login=\''.\includes\SQL::quote($_SESSION['userlogin']).'\' ';
         $result = \includes\SQL::query($sql1);
 
         if (!$result) {

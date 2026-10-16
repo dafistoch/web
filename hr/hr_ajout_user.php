@@ -85,10 +85,10 @@ function dataForm2Array(array $htmlPost, \includes\SQL $sql, \App\Libraries\Conf
     }
 
     if ('dbconges' === $config->getHowToConnectUser()) {
-        $data['pwd1'] = '' !== $htmlPost['new_password1'] ? md5($htmlPost['new_password1']) : "";
-        $data['pwd2'] = '' !== $htmlPost['new_password2'] ? md5($htmlPost['new_password2']) : "";
+        $data['pwd1'] = (string) $htmlPost['new_password1'];
+        $data['pwd2'] = (string) $htmlPost['new_password2'];
     } else {
-        $data['pwd1'] = md5(uniqid('', true));
+        $data['pwd1'] = bin2hex(random_bytes(16));
         $data['pwd2'] = $data['pwd1'];
     }
 
@@ -178,7 +178,7 @@ function insertInfosUtilisateur(array $data, \includes\SQL $sql)
                 u_is_admin='" . $data['isAdmin'] . "',
                 planning_id = 0,
                 u_is_hr='" . $data['isHR'] . "',
-                u_passwd='" . $data['pwd1'] . "',
+                u_passwd='" . password_hash($data['pwd1'], PASSWORD_BCRYPT) . "',
                 u_quotite=" . $data['quotite'] . ",
                 u_email = '" . $data['email'] . "',
                 u_heure_solde=" . \App\Helpers\Formatter::hour2Time($data['soldeHeure']) . ",
@@ -247,7 +247,7 @@ function isFormInsertValide(array $data, array &$errors, \includes\SQL $sql, \Ap
     }
 
     if ('dbconges' === $config->getHowToConnectUser()) {
-        if ('' === $data['pwd1'] || 0!== strcmp($data['pwd1'], $data['pwd2'])) {
+        if ('' === $data['pwd1'] || !hash_equals($data['pwd1'], $data['pwd2'])) {
             $errors[] = _('Saisie du mot de passe incorrect');
             $return = false;
         }

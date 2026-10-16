@@ -73,6 +73,21 @@ if (!defined('DEFINE_INCLUDE')) {
         \Rollbar\Rollbar::addCustom('access_key', LOGGER_TOKEN);
     }
 
+    if (PHP_SESSION_NONE === session_status() && !headers_sent()) {
+        ini_set('session.use_strict_mode', '1');
+        ini_set('session.use_only_cookies', '1');
+        $isHttps = (!empty($_SERVER['HTTPS']) && 'off' !== strtolower($_SERVER['HTTPS']))
+            || 'https' === strtolower($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '');
+        $cookieParams = session_get_cookie_params();
+        session_set_cookie_params([
+            'lifetime' => $cookieParams['lifetime'],
+            'path' => $cookieParams['path'],
+            'domain' => $cookieParams['domain'],
+            'secure' => $isHttps,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+    }
     session_start();
 
     /* Définition de headers de sécurité */

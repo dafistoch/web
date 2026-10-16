@@ -56,8 +56,8 @@ class Utilisateur extends \Tests\Units\TestUnit
             'isAdmin' => "N",
             'isHR' => "N",
             'email' => "luffy@dragon",
-            'pwd1' => "81dc9bdb52d04dc20036dbd8313ed055",
-            'pwd2' => "81dc9bdb52d04dc20036dbd8313ed055",
+            'pwd1' => "1234",
+            'pwd2' => "1234",
             'groupesId' => [4,5]
         ];
         $data = _Utilisateur::dataForm2Array($htmlPost, $this->db, $this->config);
