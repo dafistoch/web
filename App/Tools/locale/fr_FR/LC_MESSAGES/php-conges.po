@@ -1103,6 +1103,15 @@ msgstr "// CHEMIN VERS LE RÉPERTOIRE DE phpmailer<br>//------------------------
 msgid "config_comment_php_conges_cas_include_path"
 msgstr "// CHEMIN VERS LE RÉPERTOIRE DE cas<br>//-------------------------------------------------------<br>// On définit ici le chemin pour accéder au répertoire de la librairie PHP \"CAS\".<br>// Le chemin doit être relatif depuis la racine de l'application Libertempo."
 
+msgid "config_comment_logo_association"
+msgstr "// Logo de l'association<br>//---------------------------<br>// Chemin (relatif à la racine de l'application) ou URL du logo affiché sur la page de connexion.<br>// Laisser vide pour ne pas afficher de logo."
+
+msgid "config_comment_logo_association_largeur"
+msgstr "// Largeur du logo de l'association (en pixels)<br>//---------------------------<br>// Largeur du logo sur la page de connexion (60 par défaut)."
+
+msgid "config_comment_logo_association_hauteur"
+msgstr "// Hauteur du logo de l'association (en pixels)<br>//---------------------------<br>// Hauteur du logo sur la page de connexion (60 par défaut)."
+
 msgid "config_comment_afficher_types_conges_calendrier"
 msgstr "// Afficher le libellé des congés dans le calendrier<br>//-------------------------------------------------------<br>// Permet d'afficher le libellé des congés dans le calendrier selon le profil de l'utilisateur.<br>// Le HR voit toujours les libellés, quelle que soit l'option choisie."
 
