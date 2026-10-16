@@ -9,6 +9,7 @@ namespace App\Libraries;
  */
 class Configuration
 {
+    const LOGO_ASSOCIATION_TAILLE_DEFAUT = 60;
 
     private $data;
 
@@ -404,6 +405,51 @@ class Configuration
     public function canAfficheDateTraitement()
     {
         return $this->getGroupeDiversValeur('affiche_date_traitement');
+    }
+
+    /**
+     * Retourne le chemin (relatif à la racine) ou l'URL du logo de l'association
+     *
+     * @return string
+     */
+    public function getLogoAssociation()
+    {
+        try {
+            return (string) $this->getGroupeDiversValeur('logo_association');
+        } catch (\Exception $e) {
+            return '';
+        }
+    }
+
+    /**
+     * Retourne la largeur du logo de l'association, en pixels
+     *
+     * @return int
+     */
+    public function getLogoAssociationLargeur()
+    {
+        return $this->getDimensionLogoAssociation('logo_association_largeur');
+    }
+
+    /**
+     * Retourne la hauteur du logo de l'association, en pixels
+     *
+     * @return int
+     */
+    public function getLogoAssociationHauteur()
+    {
+        return $this->getDimensionLogoAssociation('logo_association_hauteur');
+    }
+
+    private function getDimensionLogoAssociation($nom)
+    {
+        try {
+            $dimension = (int) $this->getGroupeDiversValeur($nom);
+        } catch (\Exception $e) {
+            $dimension = 0;
+        }
+
+        return 0 < $dimension ? $dimension : static::LOGO_ASSOCIATION_TAILLE_DEFAUT;
     }
 
     /**

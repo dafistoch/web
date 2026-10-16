@@ -8,6 +8,22 @@ if ($erreur === 'login_passwd_incorrect') {
 } elseif( 'session-invalid' === getpost_variable('error', false)){
     $error_message = _('session_pas_session_ouverte');
 }
+
+$logoAssociation = null;
+try {
+    $configLogin = new \App\Libraries\Configuration(\includes\SQL::singleton());
+    $cheminLogo = trim($configLogin->getLogoAssociation());
+    $isUrlLogo = (bool) preg_match('#^(https?:)?//#i', $cheminLogo);
+    if ('' !== $cheminLogo && ($isUrlLogo || is_file(ABSOLUTE_SYSPATH . ltrim($cheminLogo, '/')))) {
+        $logoAssociation = [
+            'src' => $isUrlLogo ? $cheminLogo : ROOT_PATH . ltrim($cheminLogo, '/'),
+            'largeur' => $configLogin->getLogoAssociationLargeur(),
+            'hauteur' => $configLogin->getLogoAssociationHauteur(),
+        ];
+    }
+} catch (\Exception $e) {
+    $logoAssociation = null;
+}
 ?>
 <div class="container">
     <div class="form-signin">
@@ -24,6 +40,11 @@ if ($erreur === 'login_passwd_incorrect') {
         </div>
     <?php endif; ?>
 
+    <?php if ($logoAssociation): ?>
+        <div class="logo-association">
+            <img src="<?= htmlspecialchars($logoAssociation['src'], ENT_QUOTES) ?>" alt="Logo de l'association" width="<?= $logoAssociation['largeur'] ?>" height="<?= $logoAssociation['hauteur'] ?>" style="width: <?= $logoAssociation['largeur'] ?>px; height: <?= $logoAssociation['hauteur'] ?>px;">
+        </div>
+    <?php endif; ?>
     <form method="post" action="<?= $PHP_SELF ?>">
         <h2 class="form-signin-heading">Connexion</h2>
         <input type="text" id="session_username" class="form-control" name="session_username" value="<?= $session_username ?>" placeholder="<?= _('divers_login_maj_1') ?>" autofocus>
