@@ -58,6 +58,9 @@ class Configuration extends \Tests\Units\TestUnit
 
     public function testgetLogoAssociationTaillePersonnalisee()
     {
+        $this->result = new \mock\Mysqli\Result();
+        $this->db = new \mock\includes\SQL();
+        $this->calling($this->db)->query = $this->result;
         $this->calling($this->result)->fetch_array[1] = [
             'conf_nom' => 'logo_association',
             'conf_valeur' => 'Public/Assets/Img/logo_association.png',
@@ -79,6 +82,7 @@ class Configuration extends \Tests\Units\TestUnit
             'conf_type' => 'texte',
             'conf_commentaire' => 'config_comment_logo_association_hauteur'
         ];
+        $this->calling($this->result)->fetch_array[4] = null;
         $config = new _Configuration($this->db);
 
         $this->string($config->getLogoAssociation())->isIdenticalTo('Public/Assets/Img/logo_association.png');
