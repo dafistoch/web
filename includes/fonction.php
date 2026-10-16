@@ -143,10 +143,11 @@ function session_is_valid()
 function session_create($username)
 {
     if ($username != "") {
-        if (isset($_SESSION)) unset($_SESSION);
-
-        session_start();
-        session_regenerate_id();
+        if (PHP_SESSION_ACTIVE !== session_status()) {
+            session_start();
+        }
+        $_SESSION = [];
+        session_regenerate_id(true);
         $_SESSION['userlogin']=$username;
         $maintenant=time();
         $_SESSION['timestamp_start']=$maintenant;
@@ -175,12 +176,21 @@ function session_update($session)
 //
 function session_delete()
 {
-     unset($_SESSION['userlogin']);
-     unset($_SESSION['timestamp_start']);
-     unset($_SESSION['timestamp_last']);
-     unset($_SESSION['tab_j_feries']);
-     unset($_SESSION['config']);
-     session_destroy();
+    $_SESSION = [];
+    if (ini_get('session.use_cookies') && !headers_sent()) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', [
+            'expires' => time() - 42000,
+            'path' => $params['path'],
+            'domain' => $params['domain'],
+            'secure' => $params['secure'],
+            'httponly' => $params['httponly'],
+            'samesite' => $params['samesite'] ?? '',
+        ]);
+    }
+    if (PHP_SESSION_ACTIVE === session_status()) {
+        session_destroy();
+    }
 }
 
 
@@ -203,12 +213,23 @@ function session_saisie_user_password($erreur, $session_username)
 // - renvoie $username si authentification OK
 // - renvoie ""        si authentification FAIL
 //
-function authentification_passwd_conges($username, $password) : string
+function authentification_passwd_conges($username, $password, ?\includes\SQL $sql = null) : string
 {
-    $sql = \includes\SQL::singleton();
-    if (isAuthentifiedNouvelAlgo($sql, $username, $password)) {
+    $sql = $sql ?? \includes\SQL::singleton();
+    $hash = getUtilisateurPasswordHash($sql, (string) $username);
+    if ('' === $hash) {
+        return '';
+    }
+
+    if (password_verify((string) $password, $hash)) {
+        if (password_needs_rehash($hash, PASSWORD_BCRYPT)) {
+            updateUtilisateurChiffrement($sql, $username, $password);
+        }
         return $username;
-    } elseif (isAuthentifiedVieilAlgo($sql, $username, $password)) {
+    }
+
+    // Ancien algorithme (md5) : migration vers bcrypt à la volée
+    if (hash_equals(strtolower($hash), md5((string) $password))) {
         if (updateUtilisateurChiffrement($sql, $username, $password)) {
             return $username;
         }
@@ -219,24 +240,15 @@ function authentification_passwd_conges($username, $password) : string
     return '';
 }
 
-function isAuthentifiedNouvelAlgo(\includes\SQL $sql, string $username, string $password) : bool
+function getUtilisateurPasswordHash(\includes\SQL $sql, string $username) : string
 {
     $req = 'SELECT u_passwd
     FROM conges_users
-    WHERE u_login = "' . $sql->quote($username) . '"';
-    $result = $sql->query($req);
+    WHERE u_login = "' . $sql->quote($username) . '"
+    LIMIT 1';
+    $row = $sql->query($req)->fetch_array();
 
-    return password_verify($password, $result->fetch_array()['u_passwd']);
-}
-
-function isAuthentifiedVieilAlgo(\includes\SQL $sql, string $username, string $password) : bool
-{
-    $req = 'SELECT u_passwd
-    FROM conges_users
-    WHERE u_login = "' . $sql->quote($username) . '" AND u_passwd = "' . md5($password) . '"';
-    $result = $sql->query($req);
-
-    return $result->num_rows != 0;
+    return (string) ($row['u_passwd'] ?? '');
 }
 
 function updateUtilisateurChiffrement(\includes\SQL $sql, string $username, string $password) : bool

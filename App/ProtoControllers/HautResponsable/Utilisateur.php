@@ -419,11 +419,11 @@ enctype="application/x-www-form-urlencoded" class="form-group">';
         }
 
         if ($config->getHowToConnectUser() == "dbconges") {
-            $data['pwd1'] = $htmlPost['new_password1'] == "" ? "" : md5($htmlPost['new_password1']);
-            $data['pwd2'] = $htmlPost['new_password2'] == "" ? "" : md5($htmlPost['new_password2']);
+            $data['pwd1'] = (string) $htmlPost['new_password1'];
+            $data['pwd2'] = (string) $htmlPost['new_password2'];
         } else {
-            $data['pwd1'] = md5(uniqid('', true));
-            $data['pwd2'] = md5('none');
+            $data['pwd1'] = bin2hex(random_bytes(16));
+            $data['pwd2'] = $data['pwd1'];
         }
 
         if (array_key_exists('_METHOD', $htmlPost)) {
@@ -516,7 +516,7 @@ enctype="application/x-www-form-urlencoded" class="form-group">';
         }
 
         if ($config->getHowToConnectUser() == 'dbconges') {
-            if ($data['pwd1'] != '' && strcmp($data['pwd1'], $data['pwd2'])!=0 ) {
+            if ($data['pwd1'] != '' && !hash_equals($data['pwd1'], $data['pwd2'])) {
                 $errors[] = _('Saisie du mot de passe incorrect');
                 $return =  false;
             }
@@ -822,7 +822,7 @@ enctype="application/x-www-form-urlencoded" class="form-group">';
     private static function updatePasswordUtilisateur($data, \includes\SQL $sql)
     {
         $req = 'UPDATE conges_users
-                SET u_passwd = "' . $data['pwd1'] . '"
+                SET u_passwd = "' . password_hash($data['pwd1'], PASSWORD_BCRYPT) . '"
                 WHERE u_login="' . $data['oldLogin'] . '"' ;
         return $sql->query($req);
     }
